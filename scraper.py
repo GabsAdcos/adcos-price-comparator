@@ -12,6 +12,15 @@ USER_AGENTS = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 13_0) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
     "Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/126.0",
 ]
+def ensure_files_exist(data_file, history_file):
+    """
+    Cria arquivos CSV vazios com cabeçalhos, caso ainda não existam.
+    """
+    if not os.path.exists(data_file):
+        pd.DataFrame(columns=["adcos_product","adcos_price","competitor_product","competitor_price","keyword"]).to_csv(data_file, index=False)
+    if not os.path.exists(history_file):
+        pd.DataFrame(columns=["date","adcos_product","competitor_product","competitor_price","keyword"]).to_csv(history_file, index=False)
+
 
 def random_headers():
     return {"User-Agent": random.choice(USER_AGENTS)}
@@ -59,11 +68,6 @@ def get_competitor_price(url, retries=3):
         time.sleep(random.uniform(1, 3))
     return None
 
-def ensure_files_exist(data_file, history_file):
-    for path in (data_file, history_file):
-        if not os.path.exists(path):
-            pd.DataFrame().to_csv(path, index=False)
-
 def run_scraping(adcos_products, keywords_dict, data_file="matched_prices.csv", history_file="matched_prices_history.csv"):
     rows = []
     history_rows = []
@@ -107,9 +111,13 @@ def run_scraping(adcos_products, keywords_dict, data_file="matched_prices.csv", 
     df = pd.DataFrame(rows)
     df.to_csv(data_file, index=False)
 
-    if os.path.exists(history_file):
-        hist_df = pd.read_csv(history_file)
-        hist_df = pd.concat([hist_df, pd.DataFrame(history_rows)], ignore_index=True)
+      if os.path.exists(history_file):
+        try:
+            hist_df = pd.read_csv(history_file)
+        except pd.errors.EmptyDataError:
+            hist_df = pd.DataFrame()
+                hist_df = pd.concat([hist_df, pd.DataFrame(history_rows)], ignore_index=True)
     else:
         hist_df = pd.DataFrame(history_rows)
     hist_df.to_csv(history_file, index=False)
+
