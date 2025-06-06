@@ -110,12 +110,12 @@ def run_scraping(adcos_products, keywords_dict, data_file="matched_prices.csv", 
 
     df = pd.DataFrame(rows)
     df.to_csv(data_file, index=False)
-      if os.path.exists(history_file):
+    if os.path.exists(history_file):
         try:
             hist_df = pd.read_csv(history_file)
         except pd.errors.EmptyDataError:
             hist_df = pd.DataFrame()
-                hist_df = pd.concat([hist_df, pd.DataFrame(history_rows)], ignore_index=True)
+        hist_df = pd.concat([hist_df, pd.DataFrame(history_rows)], ignore_index=True)
     else:
         hist_df = pd.DataFrame(history_rows)
     hist_df.to_csv(history_file, index=False)
