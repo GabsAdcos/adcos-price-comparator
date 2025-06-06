@@ -110,7 +110,6 @@ def run_scraping(adcos_products, keywords_dict, data_file="matched_prices.csv", 
 
     df = pd.DataFrame(rows)
     df.to_csv(data_file, index=False)
-
       if os.path.exists(history_file):
         try:
             hist_df = pd.read_csv(history_file)
