@@ -27,7 +27,12 @@ class MongoPipeline:
 
 
 
-        self.client = pymongo.MongoClient(mongo_uri)
+        self.client = pymongo.MongoClient(
+                mongo_uri,
+                serverSelectionTimeoutMS=10000,  # tempo para localizar servidor
+                connectTimeoutMS=10000,          # tempo para conectar
+                socketTimeoutMS=10000            # tempo de inatividade por socket
+            )
         self.db = self.client["precos"]
         self.col = self.db["sallve"]
 
