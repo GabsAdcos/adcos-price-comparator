@@ -40,25 +40,33 @@ class MongoPipeline:
         self.client.close()
 
     def process_item(self, item, spider):
-        filtro = {"marca": item["marca"], "produto": item["produto"]}
+        try:
+            filtro = {"marca": item["marca"], "produto": item["produto"]}
 
-        # atualiza apenas campos mutáveis (ex: preco, descricao, url)
-        update = {
-            "$set": {
+            # atualiza apenas campos mutáveis (ex: preco, descricao, url)
+            update = {
+                "$set": {
+                "marca": item["marca"],
+                "produto": item["produto"],
                 "descricao": item["descricao"],
                 "preco": item["preco"],
                 "url_produto": item["url_produto"],
                 "categoria": item["categoria"],
+                "categoria_original": item.get("categoria_original", ""),
+                "volume": item.get("volume", "")
+                }
             }
-        }
 
-        # mantém o mesmo _id (uuid) se já existe, ou insere novo
-        existente = self.col.find_one(filtro)
-        if existente:
-            update["$set"]["id"] = existente["id"]
-        else:
-            update["$set"]["id"] = item["id"]
+            # mantém o mesmo _id (uuid) se já existe, ou insere novo
+            existente = self.col.find_one(filtro)
+            if existente:
+                update["$set"]["id"] = existente["id"]
+            else:
+                update["$set"]["id"] = item["id"]
 
-        self.col.update_one(filtro, update, upsert=True)
-        return item
+            self.col.update_one(filtro, update, upsert=True)
+            return item
+        except Exception as e:
+            spider.logger.error(f"❌ Erro ao salvar no MongoDB: {e}")
+            return item
 
